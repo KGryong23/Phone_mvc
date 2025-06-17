@@ -1,0 +1,312 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Phone Management</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .main-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            color: #333;
+            padding: 1rem 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid #dee2e6;
+        }
+
+            .main-header .navbar-brand {
+                color: white !important;
+                font-weight: bold;
+                font-size: 1.5rem;
+                margin: 0;
+            }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: white;
+            border-right: 1px solid #dee2e6;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+            padding: 1.5rem 0;
+        }
+
+            .sidebar .nav-link {
+                color: #495057;
+                padding: 0.75rem 1.5rem;
+                border-radius: 0;
+                transition: all 0.3s;
+            }
+
+                .sidebar .nav-link:hover {
+                    background-color: #f8f9fa;
+                    color: #007bff;
+                    transform: translateX(5px);
+                }
+
+                .sidebar .nav-link.active {
+                    background-color: #e9ecef;
+                    color: #212529;
+                    font-weight: 500;
+                }
+
+                .sidebar .nav-link i {
+                    width: 20px;
+                    margin-right: 10px;
+                }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Footer */
+        .main-footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: auto;
+        }
+
+        /* Card Improvements */
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border-radius: 0.5rem;
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1.25rem;
+        }
+
+        /* Table Improvements */
+        .table th {
+            background-color: #f8f9fa;
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+            padding: 1rem 0.75rem;
+        }
+
+        .table td {
+            padding: 0.875rem 0.75rem;
+            vertical-align: middle;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+
+        /* Button Improvements */
+        .btn {
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+        }
+
+        /* Toast Container */
+        #toast-container {
+            z-index: 9999;
+        }
+
+        .table-responsive {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="text-center">
+                <h1 class="navbar-brand mb-0">
+                    <i class="fas fa-mobile-alt me-2"></i>
+                    Phone Management
+                </h1>
+            </div>
+            <div id="auth-section">
+                <!-- Sẽ được thay đổi bởi JavaScript -->
+                <div>Đăng nhập</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Phone">
+                        <i class="fas fa-mobile-alt"></i>
+                        Quản lý Điện thoại
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-tags"></i>
+                        Quản lý Thương hiệu
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-users"></i>
+                        Quản lý Người dùng
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-chart-bar"></i>
+                        Báo cáo
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-cog"></i>
+                        Cài đặt
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Content Area -->
+        <main class="content-area">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container-fluid">
+            <p class="mb-0">
+                © 2025 Phone Management System.
+                <span class="text-muted">Phát triển bởi Your Company</span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="~/js/admin-common.js" asp-append-version="true"></script>
+
+    <script>
+        const isAuthenticated = @(User.Identity.IsAuthenticated.ToString().ToLower());
+
+        // Function to show toast notification
+        function showToast(message, type = 'success') {
+            const toastContainer = $('#toast-container');
+            const bgClass = type === 'success' ? 'bg-success' : 'bg-danger';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+            const toastHtml = `
+                <div class="toast align-items-center text-white ${bgClass} border-0" role="alert" style="min-width: 200px;">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas ${icon} me-2"></i>${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+
+            toastContainer.append(toastHtml);
+            const toast = new bootstrap.Toast(toastContainer.find('.toast:last-child'), { autohide: true, delay: 3000 });
+            toast.show();
+
+            $('.toast').on('hidden.bs.toast', function () {
+                $(this).remove();
+            });
+        }
+
+        // Function to handle logout
+        function logout() {
+            $.ajax({
+                url: '/User/Logout', // Giả định có endpoint Logout
+                type: 'POST',
+                success: function() {
+                    showToast('Đăng xuất thành công!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/User'; // Chuyển hướng về trang đăng nhập
+                    }, 1000);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Logout error:', error);
+                    showToast('Đăng xuất thất bại. Vui lòng thử lại.', 'error');
+                }
+            });
+        }
+
+                // Initialize authentication state
+        $(document).ready(function () {
+            const authSection = $('#auth-section');
+
+            // Nếu chưa đăng nhập thì chuyển hướng về /User
+            if (!isAuthenticated) {
+                window.location.href = '/User';
+                return; // Dừng thực hiện phần còn lại
+            }
+
+            // Nếu đã đăng nhập thì hiện nút Đăng xuất
+            authSection.html(`
+                <button class="btn btn-outline-danger btn-sm" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                </button>
+            `);
+
+            $('#logoutBtn').on('click', function () {
+                logout();
+            });
+        });
+
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,90 @@
+﻿@using Phone_mvc.Dtos
+@using Phone_mvc.Enums
+@model PhoneDto
+
+<div class="modal-header">
+    <h5 class="modal-title">Chi tiết Điện thoại</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Tên mẫu:</label>
+                <p class="form-control-plaintext">@Model.Model</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Thương hiệu:</label>
+                <p class="form-control-plaintext">@(Model.BrandName ?? "Chưa có thương hiệu")</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Giá:</label>
+                <p class="form-control-plaintext text-primary fw-bold">@Model.Price.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Tồn kho:</label>
+                <p class="form-control-plaintext">@Model.Stock.ToString("N0") sản phẩm</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Trạng thái:</label>
+                <p class="form-control-plaintext">
+                    @{
+                        string badgeClass = Model.ModerationStatus switch
+                        {
+                            ModerationStatus.Approved => "badge bg-success",
+                            ModerationStatus.Rejected => "badge bg-danger",
+                            _ => "badge bg-secondary"
+                        };
+                    }
+                    <span class="@badgeClass">@Model.ModerationStatusTxt</span>
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label fw-bold">ID:</label>
+                <p class="form-control-plaintext"><small class="text-muted">@Model.Id</small></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Ngày tạo:</label>
+                <p class="form-control-plaintext">@Model.Created.ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Lần sửa cuối:</label>
+                <p class="form-control-plaintext">@(Model.LastModified?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa có")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    @if (Model.ModerationStatus != ModerationStatus.Approved)
+    {
+        <a href="/Phone/Edit/@Model.Id" class="btn btn-primary">
+            <i class="fa fa-edit me-2"></i>Chỉnh sửa
+        </a>
+    }
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+</div>

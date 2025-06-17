@@ -1,0 +1,46 @@
+﻿<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+<script>
+    // Tùy chỉnh jQuery Validation messages tiếng Việt
+    $.extend($.validator.messages, {
+        required: "Trường này là bắt buộc.",
+        remote: "Vui lòng sửa trường này.",
+        email: "Vui lòng nhập địa chỉ email hợp lệ.",
+        url: "Vui lòng nhập URL hợp lệ.",
+        date: "Vui lòng nhập ngày hợp lệ.",
+        dateISO: "Vui lòng nhập ngày hợp lệ (ISO).",
+        number: "Vui lòng nhập số hợp lệ.",
+        digits: "Vui lòng chỉ nhập chữ số.",
+        creditcard: "Vui lòng nhập số thẻ tín dụng hợp lệ.",
+        equalTo: "Vui lòng nhập lại giá trị giống như trên.",
+        extension: "Vui lòng nhập giá trị có phần mở rộng hợp lệ.",
+        maxlength: $.validator.format("Vui lòng nhập không quá {0} ký tự."),
+        minlength: $.validator.format("Vui lòng nhập ít nhất {0} ký tự."),
+        rangelength: $.validator.format("Vui lòng nhập từ {0} đến {1} ký tự."),
+        range: $.validator.format("Vui lòng nhập giá trị từ {0} đến {1}."),
+        max: $.validator.format("Vui lòng nhập giá trị nhỏ hơn hoặc bằng {0}."),
+        min: $.validator.format("Vui lòng nhập giá trị lớn hơn hoặc bằng {0}.")
+    });
+
+    // Tùy chỉnh cách hiển thị lỗi
+    $.validator.setDefaults({
+        highlight: function(element) {
+            $(element).addClass('is-invalid').removeClass('is-valid');
+        },
+        unhighlight: function(element) {
+            $(element).removeClass('is-invalid').addClass('is-valid');
+        },
+        errorElement: 'span',
+        errorClass: 'text-danger',
+        errorPlacement: function(error, element) {
+            // Tìm span validation có sẵn
+            var validationSpan = element.closest('.mb-3').find('[data-valmsg-for="' + element.attr('name') + '"]');
+            if (validationSpan.length) {
+                validationSpan.html(error.text());
+            } else {
+                error.insertAfter(element);
+            }
+        }
+    });
+</script>

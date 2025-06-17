@@ -1,0 +1,539 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Điện thoại";
+}
+
+<!-- Page Title -->
+<div class="mb-4">
+    <h2 class="text-primary">
+        <i class="fas fa-mobile-alt me-2"></i>
+        Quản lý Điện thoại
+    </h2>
+</div>
+
+<!-- Search and Add Section -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <input type="text" class="form-control" id="search-input"
+               placeholder="Nhập tên mẫu, thương hiệu..." autocomplete="off">
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary w-75" id="search-btn" type="button">
+            <i class="fas fa-search me-1"></i>Tìm kiếm
+        </button>
+    </div>
+    <!-- Căn phải tuyệt đối -->
+    <div class="col-md-3 ms-auto text-end">
+        <button id="ThemMoiPhone" type="button" class="btn btn-success w-50 w-md-auto">
+            <i class="fas fa-plus me-1"></i>Thêm mới
+        </button>
+    </div>
+</div>
+
+<!-- Data Table -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="phone-table" style="width:100%">
+                <thead>
+                    <tr>
+                        <th width="60">STT</th>
+                        <th>Tên mẫu</th>
+                        <th>Thương hiệu</th>
+                        <th width="120">Giá</th>
+                        <th width="100">Tồn kho</th>
+                        <th width="120">Trạng thái</th>
+                        <th width="120">Chức năng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- DataTables sẽ load dữ liệu vào đây -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Custom Pagination Container với page size selector -->
+        <div class="pagination-container">
+            <div class="page-size-selector">
+                <label for="page-size-select" class="form-label me-2">Hiển thị:</label>
+                <select id="page-size-select" class="form-select form-select-sm">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <span class="ms-2">mục</span>
+            </div>
+            <div class="pagination-wrapper">
+                <!-- Pagination sẽ được tạo ở đây -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+                // Global variables
+                let dataTable;
+
+                // Phone management functions
+                function xemPhone(id) {
+                    openModalWithApi("/Phone/View/" + id, "lg");
+                }
+                // Phone management functions
+                function suaPhone(id) {
+                    window.location.href = "/Phone/Edit/" + id;
+                }
+
+                function duyetPhone(id) {
+            toggleButtonContainerLoading(id);
+
+            $.ajax({
+                url: '/Phone/Approve/' + id,
+                method: 'POST',
+                dataType: 'json',
+                success: function (response) {
+                    console.log('Approve response:', response);
+                    toggleButtonContainerLoading(id);
+
+                    if (response.success) {
+                        showNotification("success", response.message || "Duyệt thành công");
+
+                        // Sử dụng window.dataTable thay vì dataTable
+                        if (window.dataTable && typeof window.dataTable.ajax !== 'undefined') {
+                            window.dataTable.ajax.reload(function() {
+                                console.log('Table reloaded after approve');
+                            }, false);
+                        } else {
+                            console.error('DataTable not found, reloading page');
+                            window.location.reload();
+                        }
+                    } else {
+                        showNotification("error", response.message || "Có lỗi xảy ra");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Approve error:', xhr, status, error);
+                    toggleButtonContainerLoading(id);
+                    HandleErrorResponse(xhr);
+                }
+            });
+        }
+
+                function huyDuyetPhone(id) {
+            toggleButtonContainerLoading(id);
+
+            $.ajax({
+                url: '/Phone/Reject/' + id,
+                method: 'POST',
+                dataType: 'json',
+                success: function (response) {
+                    console.log('Reject response:', response);
+                    toggleButtonContainerLoading(id);
+
+                    if (response.success) {
+                        showNotification("success", response.message || "Hủy duyệt thành công");
+
+                        // Sử dụng window.dataTable thay vì dataTable
+                        if (window.dataTable && typeof window.dataTable.ajax !== 'undefined') {
+                            window.dataTable.ajax.reload(function() {
+                                console.log('Table reloaded after reject');
+                            }, false);
+                        } else {
+                            console.error('DataTable not found, reloading page');
+                            window.location.reload();
+                        }
+                    } else {
+                        showNotification("error", response.message || "Có lỗi xảy ra");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Reject error:', xhr, status, error);
+                    toggleButtonContainerLoading(id);
+                    HandleErrorResponse(xhr);
+                }
+            });
+        }
+
+                function xoaPhone(id) {
+            showNotificationWithConfirm(
+                "Bạn có chắc chắn muốn xóa điện thoại này?",
+                function () {
+                    // Hiển thị loading state
+                    toggleButtonContainerLoading(id);
+
+                    $.ajax({
+                        url: '/Phone/Delete/' + id,
+                        method: 'POST',
+                        dataType: 'json',
+                        success: function (response) {
+                            console.log('Delete response:', response);
+                            toggleButtonContainerLoading(id);
+
+                            if (response.success) {
+                                showNotification("success", response.message || "Xóa thành công");
+
+                                // Sử dụng window.dataTable thay vì dataTable
+                                if (window.dataTable && typeof window.dataTable.ajax !== 'undefined') {
+                                    window.dataTable.ajax.reload(function() {
+                                        console.log('Table reloaded after delete');
+                                    }, false);
+                                } else {
+                                    console.error('DataTable not found, reloading page');
+                                    window.location.reload();
+                                }
+                            } else {
+                                showNotification("error", response.message || "Có lỗi xảy ra khi xóa");
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Delete error:', xhr, status, error);
+                            toggleButtonContainerLoading(id);
+                            HandleErrorResponse(xhr);
+                        }
+                    });
+                },
+                function () {
+                    // Callback khi user hủy - không cần làm gì
+                    console.log('Delete cancelled by user');
+                }
+            );
+        }
+
+                function formatCurrency(amount) {
+                    return new Intl.NumberFormat('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND'
+                    }).format(amount);
+                }
+
+                function getModerationStatusClass(status) {
+                    switch (status) {
+                        case 0: return 'bg-success'; // Đã duyệt
+                        case 1: return 'bg-warning text-dark'; // Chưa duyệt
+                        case 2: return 'bg-danger'; // Từ chối
+                        default: return 'bg-secondary';
+                    }
+                }
+
+                function HandleErrorResponse(xhr) {
+                    console.error('Ajax Error:', xhr);
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response && response.message) {
+                            showNotification("error", response.message);
+                        } else {
+                            showNotification("error", "Có lỗi xảy ra trong hệ thống");
+                        }
+                    } catch (e) {
+                        showNotification("error", `Có lỗi xảy ra: ${xhr.status} - ${xhr.statusText}`);
+                    }
+                }
+
+                $(document).ready(function () {
+                    console.log('Phone management page loaded');
+
+                    // Đảm bảo dataTable là global variable
+                    window.dataTable = null;
+
+                    // Hàm ánh xạ tên trường chữ thường sang chữ hoa đầu
+                    function capitalizeFirstLetter(str) {
+                       return str.charAt(0).toUpperCase() + str.slice(1);
+                    }
+                    const style = document.createElement('style');
+        style.textContent = `
+        /* Chỉ ẩn các element mặc định của DataTables trong table */
+        #phone-table_wrapper .dataTables_length,
+        #phone-table_wrapper .dataTables_info {
+            display: none !important;
+        }
+
+        /* Style cho pagination container với page size selector */
+        .pagination-container {
+            background-color: transparent;
+            border: none !important;
+            margin: 0;
+            padding: 1rem 0;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        /* Page size selector bên trái - to hơn và thụt vào trái */
+        .page-size-selector {
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+            color: #495057;
+            font-weight: 500;
+            margin-left: 0.5rem; /* Thụt vào trái */;
+            margin-top: -6rem;
+        }
+
+        .page-size-selector .form-label {
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+
+        .page-size-selector .form-select {
+            width: auto;
+            min-width: 85px; /* To hơn từ 70px lên 85px */
+            font-size: 0.95rem; /* To hơn */
+            padding: 0.5rem 0.75rem; /* Padding to hơn */
+            margin: 0 0.2rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            font-weight: 500;
+        }
+
+        .page-size-selector span {
+            white-space: nowrap;
+        }
+
+        /* Pagination wrapper bên phải */
+        .pagination-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-right: 0.5rem; /* Thụt vào phải */
+        }
+
+        .pagination-wrapper .dataTables_paginate {
+            margin: 0 !important;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Style cho pagination */
+        .pagination-wrapper .dataTables_paginate .pagination {
+            margin-bottom: 0 !important;
+            box-shadow: none !important;
+            display: flex;
+            justify-content: center;
+        }
+
+        .pagination-wrapper .dataTables_paginate .page-link {
+            border: 1px solid #dee2e6;
+            color: #6c757d;
+            background-color: #fff;
+            padding: 0.5rem 0.75rem;
+            transition: all 0.2s ease-in-out;
+            font-size: 0.875rem;
+        }
+
+        .pagination-wrapper .dataTables_paginate .page-link:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+            color: #495057;
+        }
+
+        .pagination-wrapper .dataTables_paginate .page-item.active .page-link {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: #fff;
+        }
+
+        .pagination-wrapper .dataTables_paginate .page-item.disabled .page-link {
+            color: #6c757d;
+            background-color: #fff;
+            border-color: #dee2e6;
+            opacity: 0.5;
+        }
+        `;
+        document.head.appendChild(style);
+                    // Initialize DataTable
+                    try {
+                        window.dataTable = $('#phone-table').DataTable({
+                            processing: true,
+                            serverSide: true,
+                            searching: false, // Giữ tìm kiếm tùy chỉnh
+                            lengthChange: false, // Tắt menu mặc định của DataTables
+                            info: false, // Tắt thông tin bản ghi mặc định
+                            paging: true,
+                            ordering: true,
+                            order: [[3, 'desc']], // Sắp xếp mặc định theo cột giá (index 3)
+                            pageLength: 10, // Mặc định 10 bản ghi
+                            ajax: {
+                                url: '/Phone/GetPaged',
+                                type: 'GET',
+                                data: function (d) {
+                                    const sortField = d.columns[d.order[0]?.column]?.data || 'price';
+                                    return {
+                                        keyword: $('#search-input').val() || '',
+                                        skip: d.start || 0,
+                                        take: d.length || 10,
+                                        draw: d.draw || 1,
+                                        sortField: capitalizeFirstLetter(sortField),
+                                        sortDirection: d.order[0]?.dir || 'desc'
+                                    };
+                                },
+                                dataSrc: function (response) {
+                                    console.log('DataTable response:', response);
+
+                                    if (response.success && response.data) {
+                                        // Ánh xạ dữ liệu cho DataTable
+                                        const dataTableResponse = {
+                                            draw: response.data.draw || 1,
+                                            recordsTotal: response.data.recordsTotal || 0,
+                                            recordsFiltered: response.data.recordsFiltered || 0,
+                                            data: response.data.data || []
+                                        };
+                                        // Cập nhật settings để DataTable nhận thông tin phân trang
+                                        if (dataTable) {
+                                            dataTable.settings()[0].json = dataTableResponse;
+                                        }
+                                        console.log('dataTableResponse', dataTableResponse)
+                                        return dataTableResponse.data;
+                                    } else {
+                                        console.error('API Error:', response);
+                                        showNotification('error', response.message || 'Có lỗi xảy ra khi tải dữ liệu');
+                                        return [];
+                                    }
+                                },
+                                error: function (xhr, error, thrown) {
+                                    console.error('AJAX Error:', xhr, error, thrown);
+                                    showNotification('error', 'Lỗi khi tải dữ liệu: ' + (xhr.responseJSON?.message || thrown));
+                                }
+                            },
+                            columns: [
+                                {
+                                    data: null,
+                                    render: function (data, type, row, meta) {
+                                        return meta.row + meta.settings._iDisplayStart + 1;
+                                    },
+                                    orderable: false,
+                                    className: 'text-center'
+                                },
+                                {
+                                    data: 'model', // Phải khớp với SortField ở backend
+                                    render: function (data, type, row) {
+                                        return `<a href='#' onclick='xemPhone("${row.id}")' class="text-decoration-none">${data}</a>`;
+                                    },
+                                    orderable: false
+                                },
+                                {
+                                    data: 'brandName',
+                                    render: function (data, type, row) {
+                                        return data || '<span class="text-muted fst-italic">Chưa có thương hiệu</span>';
+                                    },
+                                    orderable: false
+                                },
+                                {
+                                    data: 'price',
+                                    render: function (data, type, row) {
+                                        if (type === 'display') {
+                                            return `<span class="text-success">${formatCurrency(data)}</span>`;
+                                        }
+                                        return data;
+                                    },
+                                    orderable: true,
+                                    className: 'text-end'
+                                },
+                                {
+                                    data: 'stock',
+                                    render: function (data, type, row) {
+                                        const stockClass = data > 0 ? 'text-success' : 'text-danger';
+                                        return `<span class="${stockClass}">${data.toLocaleString()}</span>`;
+                                    },
+                                    orderable: false,
+                                    className: 'text-end'
+                                },
+                                {
+                                    data: 'moderationStatusTxt',
+                                    render: function (data, type, row) {
+                                        return `<span class="badge ${getModerationStatusClass(row.moderationStatus)} rounded-pill">${data}</span>`;
+                                    },
+                                    orderable: false,
+                                    className: 'text-center'
+                                },
+                                {
+                                    data: null,
+                                    render: function (data, type, row) {
+                                        var html = `<div class='button-container-in-grid button-container-${row.id} d-flex justify-content-center gap-1'>`;
+                                        if (row.moderationStatus == 1) { // Chưa duyệt
+                                            html += `<button type="button" title="Sửa" onclick='suaPhone("${row.id}")' class="btn btn-sm btn-outline-warning">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>`;
+                                            html += `<button type="button" title="Duyệt" onclick='duyetPhone("${row.id}")' class="btn btn-sm btn-outline-success">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>`;
+                                            html += `<button type="button" title="Xóa" onclick='xoaPhone("${row.id}")' class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>`;
+                                        } else if (row.moderationStatus == 0) { // Đã duyệt
+                                            html += `<button type="button" title="Hủy duyệt" onclick='huyDuyetPhone("${row.id}")' class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>`;
+                                        }
+                                        return html += '</div>';
+                                    },
+                                    orderable: false,
+                                    className: 'text-center'
+                                }
+                            ],
+                            language: {
+                                processing: 'Đang xử lý...',
+                                loadingRecords: 'Đang tải...',
+                                zeroRecords: 'Không tìm thấy dữ liệu phù hợp',
+                                emptyTable: 'Không có dữ liệu trong bảng',
+                                paginate: {
+                                    first: 'Đầu',
+                                    previous: 'Trước',
+                                    next: 'Sau',
+                                    last: 'Cuối'
+                                }
+                            },
+                            dom: '<"row"<"col-sm-12"t>>' +
+                                 '<"pagination-container"<"page-size-selector"><"pagination-wrapper"p>>', // Custom layout
+                        });
+
+                        // Gán lại cho biến local để backward compatibility
+                        dataTable = window.dataTable;
+
+                        console.log('DataTable initialized successfully');
+
+                        // Handle page size change
+                        $('#page-size-select').on('change', function() {
+                            const newPageSize = parseInt($(this).val());
+                            console.log('Changing page size to:', newPageSize);
+
+                            if (window.dataTable) {
+                                window.dataTable.page.len(newPageSize).draw();
+                            }
+                        });
+
+                    } catch (error) {
+                        console.error('Error initializing DataTable:', error);
+                        showNotification('error', 'Có lỗi khi khởi tạo bảng dữ liệu: ' + error.message);
+                    }
+
+                    // Custom search functionality
+                    $('#search-btn').click(function () {
+                        if (window.dataTable) {
+                            window.dataTable.ajax.reload();
+                        }
+                    });
+
+                    $('#search-input').on('keypress', function (e) {
+                        if (e.which == 13) {
+                            $('#search-btn').click();
+                        }
+                    });
+
+                    $('#ThemMoiPhone').click(function () {
+                        window.location.href = '/Phone/Edit/00000000-0000-0000-0000-000000000000';
+                    });
+
+                    // Set active sidebar menu
+                    $('.sidebar .nav-link').removeClass('active');
+                    $('.sidebar .nav-link[href="/Phone"]').addClass('active');
+
+                    @if (TempData["SuccessMessage"] != null && TempData["FromPost"] != null)
+                    {
+                                <text>
+                                    showNotification("success", "@TempData["SuccessMessage"]");
+                                </text>
+                    }
+                });
+    </script>
+}

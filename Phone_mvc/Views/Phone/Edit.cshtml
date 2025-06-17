@@ -1,0 +1,63 @@
+﻿@model CreateOrUpdatePhoneViewModel
+
+@{
+    ViewData["Title"] = ViewBag.IsEdit == true ? "Chỉnh sửa Điện thoại" : "Thêm mới Điện thoại";
+    bool isEdit = ViewBag.IsEdit ?? false;
+    Guid phoneId = ViewBag.PhoneId ?? Guid.Empty;
+}
+
+<div class="container-fluid">
+    <div class="page-title">
+        <div class="row">
+            <div class="col-6"><h4>@ViewData["Title"]</h4></div>
+            <div class="col-6">
+                <ol class="breadcrumb justify-content-end">
+                    <li class="breadcrumb-item"><a href="/"><i class="fa fa-home"></i></a></li>
+                    <li class="breadcrumb-item"><a href="/Phone">Điện thoại</a></li>
+                    <li class="breadcrumb-item active">@(isEdit ? "Chỉnh sửa" : "Thêm mới")</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header pb-0"><h5>@ViewData["Title"]</h5></div>
+                <div class="card-body">
+                    @using (Html.BeginForm(
+                                        isEdit ? "Update" : "Create",
+                                        "Phone",
+                                        isEdit ? new { id = phoneId } : null,
+                                        FormMethod.Post,
+                                        true, // Fix: Add null for the optional 'htmlAttributes' parameter
+                                        new { @class = "needs-validation", novalidate = "novalidate" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <partial name="_PhoneForm" model="Model" />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(function () {
+            $('.field-validation-error').each(function () {
+                $(this).closest('.mb-3').find('input, select, textarea').addClass('is-invalid');
+            });
+
+            $("form").on("submit", function (e) {
+                if (!$(this).valid()) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
+    </script>
+}
