@@ -13,18 +13,29 @@ namespace Phone_mvc.Services
     {
         private readonly IPhoneRepository _phoneRepository;
         private readonly IBrandRepository _brandRepository;
+        private readonly IUserService _userService;
+        private readonly IRoleService _roleService;
 
-        public PhoneService(IPhoneRepository phoneRepository, IBrandRepository brandRepository)
+        public PhoneService(IPhoneRepository phoneRepository, IBrandRepository brandRepository, IUserService userService, IRoleService roleService)
         {
             _phoneRepository = phoneRepository;
             _brandRepository = brandRepository;
+            _userService = userService;
+            _roleService = roleService;
         }
 
         /// <summary>
         /// Lấy danh sách Phone phân trang, tìm kiếm theo Model, sắp xếp theo Price
         /// </summary>
-        public async Task<PagedResult<PhoneDto>> GetPagedAsync(BaseQuery query)
+        public async Task<PagedResult<PhoneDto>> GetPagedAsync(BaseQuery query, Guid? userId)
         {
+            if (userId is null)
+                throw new UnauthorizedAccessException("Không có quyền thực hiện điều này!");
+            bool isAuthorized = await IsUserAuthorizedAsync(userId.Value);
+            if (!isAuthorized)
+            {
+                query.CreatedBy = userId.Value; // Chỉ lấy dữ liệu của người dùng hiện tại
+            }
             var result = await _phoneRepository.GetPagedAsync(query, "Model");
             var phones = result.Data.Select(p => new PhoneDto
             {
@@ -50,10 +61,14 @@ namespace Phone_mvc.Services
         /// <summary>
         /// Lấy Phone theo ID
         /// </summary>
-        public async Task<PhoneDto> GetByIdAsync(Guid id)
+        public async Task<PhoneDto> GetByIdAsync(Guid id, Guid? userId)
         {
+            if (userId is null)
+                throw new UnauthorizedAccessException("Không có quyền thực hiện điều này!");
+            bool isAuthorized = await IsUserAuthorizedAsync(userId.Value);
             var phone = await _phoneRepository.GetByIdAsync(id);
-            return phone.ToDto() ?? new PhoneDto();
+            if (isAuthorized || phone.CreatedBy == userId.Value) return phone.ToDto(); // Trả về thông tin đầy đủ nếu người dùng có quyền
+            return new PhoneDto();
         }
 
         /// <summary>
@@ -143,6 +158,17 @@ namespace Phone_mvc.Services
             _phoneRepository.Update(phone);
 
             return await _phoneRepository.SaveChangesAsync();
+        }
+        private async Task<bool> IsUserAuthorizedAsync(Guid userId)
+        {
+            var userIds = await _userService.GetUserRoleIdsAsync(userId);
+            var roleIds = await _roleService.GetRoleIdsWithData();
+            foreach (var userRoleId in userIds)
+            {
+                if (roleIds.Contains(userRoleId))
+                    return true;
+            }
+            return false;
         }
     }
 }

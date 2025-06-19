@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Caching.Memory;
-using Phone_mvc.Common;
 using Phone_mvc.Repositories;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
@@ -23,12 +22,10 @@ namespace Phone_mvc.Filters
             var userIdClaim = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdClaim, out var userId))
             {
-                context.Result = new JsonResult(ApiResponse<object>.ErrorResult("Access denied: Invalid user."))
-                {
-                    StatusCode = StatusCodes.Status403Forbidden
-                };
+                context.Result = new ForbidResult();
                 return;
             }
+
             using var scope = context.HttpContext.RequestServices.CreateScope();
             var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
             var permissionRepository = scope.ServiceProvider.GetRequiredService<IPermissionRepository>();
@@ -38,7 +35,6 @@ namespace Phone_mvc.Filters
             var method = context.HttpContext.Request.Method;
             var requiredPermission = $"{endpoint}:{method}";
 
-            // Lấy danh sách roleId từ cache hoặc DB
             if (!cache.TryGetValue($"user_{userId}", out List<Guid>? roleIds))
             {
                 roleIds = (await userRoleRepository.FindAllAsync(ur => ur.UserId == userId))
@@ -53,10 +49,7 @@ namespace Phone_mvc.Filters
 
             if (roleIds is null || !roleIds.Any())
             {
-                context.Result = new JsonResult(ApiResponse<object>.ErrorResult("Access denied: No roles assigned."))
-                {
-                    StatusCode = StatusCodes.Status403Forbidden
-                };
+                context.Result = new ForbidResult();
                 return;
             }
 
@@ -75,15 +68,11 @@ namespace Phone_mvc.Filters
                     return;
             }
 
-            context.Result = new JsonResult(ApiResponse<object>.ErrorResult("Access denied: Insufficient permissions."))
-            {
-                StatusCode = StatusCodes.Status403Forbidden
-            };
+            context.Result = new ForbidResult();
         }
 
         private static string NormalizeEndpoint(string endpoint)
         {
-            if (endpoint.ToLower() == "/phone") return "/phone/view"; // Chuyển /phone thành /phone/index
             var pattern = @"^/(\w+)/(\w+)(?:/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|guid\.empty)?)?$";
             var match = Regex.Match(endpoint, pattern);
             if (match.Success)

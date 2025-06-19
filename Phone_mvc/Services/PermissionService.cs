@@ -42,9 +42,15 @@ namespace Phone_mvc.Services
         public async Task SyncPermissionsAsync()
         {
             var existingPermissions = await _permissionRepository.GetAllAsync();
-            var phoneControllerPermissions = GetPhoneControllerPermissions();
+            var controllerTypes = new[] {
+                typeof(PhoneController),
+                typeof(RoleController),
+                typeof(BrandController),
+                typeof(PermissionController)
+            }; // Danh sách controller, có thể mở rộng
+            var allPermissions = GetPermissionsFromControllers(controllerTypes);
 
-            foreach (var permission in phoneControllerPermissions)
+            foreach (var permission in allPermissions)
             {
                 if (!existingPermissions.Any(p => p.Controller == permission.Controller &&
                                                 p.Endpoint == permission.Endpoint &&
@@ -55,32 +61,40 @@ namespace Phone_mvc.Services
             }
             await _permissionRepository.SaveChangesAsync();
         }
-        private List<Permission> GetPhoneControllerPermissions()
+
+        private List<Permission> GetPermissionsFromControllers(Type[] controllerTypes)
         {
             var permissions = new List<Permission>();
-            var controllerType = typeof(PhoneController); // Chỉ lấy từ PhoneController
 
-            // Lấy tất cả các phương thức public trong PhoneController
-            var methods = controllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                .Where(m => !m.IsSpecialName); // Loại bỏ getter, setter, v.v.
-
-            foreach (var method in methods)
+            foreach (var controllerType in controllerTypes)
             {
-                // Lấy attribute Route hoặc HttpMethod
-                var routeAttribute = method.GetCustomAttributes(typeof(RouteAttribute), true)
-                    .FirstOrDefault() as RouteAttribute;
-                var httpMethodAttribute = method.GetCustomAttributes(true)
-                    .OfType<HttpMethodAttribute>()
-                    .FirstOrDefault();
+                var methods = controllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                    .Where(m => !m.IsSpecialName); // Loại bỏ getter, setter, v.v.
 
-                if (routeAttribute != null || httpMethodAttribute != null)
+                foreach (var method in methods)
                 {
-                    string endpoint = routeAttribute?.Template?.ToLower() ?? $"/phone/{method.Name.ToLower()}";
-                    string methodName = httpMethodAttribute?.HttpMethods.FirstOrDefault()?.ToLower() ?? "get"; // Mặc định là GET nếu không có
+                    var routeAttribute = method.GetCustomAttributes(typeof(RouteAttribute), true)
+                        .FirstOrDefault() as RouteAttribute;
+                    var httpMethodAttribute = method.GetCustomAttributes(true)
+                        .OfType<HttpMethodAttribute>()
+                        .FirstOrDefault();
+
+                    string controllerName = controllerType.Name.Replace("Controller", "").ToLower();
+                    string endpoint;
+                    // Xử lý đặc biệt cho Index: đặt thành /phone (hoặc controller tương ứng)
+                    if (method.Name.ToLower() == "index" && routeAttribute == null)
+                    {
+                        endpoint = $"/{controllerName}"; // Chỉ /phone cho Index
+                    }
+                    else
+                    {
+                        endpoint = routeAttribute?.Template?.ToLower() ?? $"/{controllerName}/{method.Name.ToLower()}";
+                    }
+                    string methodName = httpMethodAttribute?.HttpMethods.FirstOrDefault()?.ToLower() ?? "get";
 
                     var permission = new Permission
                     {
-                        Controller = "phone",
+                        Controller = controllerName,
                         Endpoint = endpoint,
                         Method = methodName
                     };

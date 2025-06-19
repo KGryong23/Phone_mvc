@@ -2,7 +2,6 @@
 <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
 <script>
-    // Tùy chỉnh jQuery Validation messages tiếng Việt
     $.extend($.validator.messages, {
         required: "Trường này là bắt buộc.",
         remote: "Vui lòng sửa trường này.",
@@ -23,7 +22,6 @@
         min: $.validator.format("Vui lòng nhập giá trị lớn hơn hoặc bằng {0}.")
     });
 
-    // Tùy chỉnh cách hiển thị lỗi
     $.validator.setDefaults({
         highlight: function(element) {
             $(element).addClass('is-invalid').removeClass('is-valid');
@@ -34,7 +32,6 @@
         errorElement: 'span',
         errorClass: 'text-danger',
         errorPlacement: function(error, element) {
-            // Tìm span validation có sẵn
             var validationSpan = element.closest('.mb-3').find('[data-valmsg-for="' + element.attr('name') + '"]');
             if (validationSpan.length) {
                 validationSpan.html(error.text());

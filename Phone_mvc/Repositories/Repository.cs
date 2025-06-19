@@ -77,6 +77,12 @@ namespace Phone_mvc.Repositories
                 dataQuery = dataQuery.Where(x => EF.Property<string>(x, searchField).ToLower().Contains(query.Keyword.ToLower()));
             }
 
+            // Lọc theo CreatedBy nếu có giá trị
+            if (query.CreatedBy.HasValue)
+            {
+                dataQuery = dataQuery.Where(x => EF.Property<Guid?>(x, "CreatedBy") == query.CreatedBy.Value);
+            }
+
             // Đếm số bản ghi sau khi lọc
             int recordsFiltered = await dataQuery.CountAsync();
 

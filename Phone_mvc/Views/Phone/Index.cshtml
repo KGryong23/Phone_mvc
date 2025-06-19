@@ -1,35 +1,39 @@
 ﻿@{
     ViewData["Title"] = "Quản lý Điện thoại";
+    var canEdit = Html.HasPermission("/phone/update").ToString().ToLower();    
+    var canApprove = Html.HasPermission("/phone/approve").ToString().ToLower();
+    var canDelete = Html.HasPermission("/phone/delete").ToString().ToLower();
+    var canReject = Html.HasPermission("/phone/reject").ToString().ToLower();
+    var canView = Html.HasPermission("/phone/view").ToString().ToLower();
 }
 
-<!-- Page Title -->
 <div class="mb-4">
-    <h2 class="text-primary">
+    <h2 class="text-black">
         <i class="fas fa-mobile-alt me-2"></i>
         Quản lý Điện thoại
     </h2>
 </div>
 
-<!-- Search and Add Section -->
 <div class="row mb-4">
     <div class="col-md-3">
         <input type="text" class="form-control" id="search-input"
                placeholder="Nhập tên mẫu, thương hiệu..." autocomplete="off">
     </div>
     <div class="col-md-2">
-        <button class="btn btn-primary w-75" id="search-btn" type="button">
+        <button class="btn btn-primary w-50" id="search-btn" type="button">
             <i class="fas fa-search me-1"></i>Tìm kiếm
         </button>
     </div>
-    <!-- Căn phải tuyệt đối -->
-    <div class="col-md-3 ms-auto text-end">
-        <button id="ThemMoiPhone" type="button" class="btn btn-success w-50 w-md-auto">
-            <i class="fas fa-plus me-1"></i>Thêm mới
-        </button>
-    </div>
+    @if (Html.HasPermission("/phone/create")) 
+    {
+        <div class="col-md-3 ms-auto text-end">
+            <button id="ThemMoiPhone" type="button" class="btn btn-success w-40 w-md-auto">
+                <i class="fas fa-plus me-1"></i>Thêm mới
+            </button>
+        </div>
+    }
 </div>
 
-<!-- Data Table -->
 <div class="card">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -46,12 +50,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- DataTables sẽ load dữ liệu vào đây -->
                 </tbody>
             </table>
         </div>
 
-        <!-- Custom Pagination Container với page size selector -->
         <div class="pagination-container">
             <div class="page-size-selector">
                 <label for="page-size-select" class="form-label me-2">Hiển thị:</label>
@@ -65,7 +67,6 @@
                 <span class="ms-2">mục</span>
             </div>
             <div class="pagination-wrapper">
-                <!-- Pagination sẽ được tạo ở đây -->
             </div>
         </div>
     </div>
@@ -73,19 +74,27 @@
 
 @section Scripts {
     <script>
-                // Global variables
-                let dataTable;
+          const permissions = {
+              edit: @canEdit,
+              approve: @canApprove,
+              delete: @canDelete,
+              reject: @canReject,
+              view: @canView
+          };
 
-                // Phone management functions
-                function xemPhone(id) {
-                    openModalWithApi("/Phone/View/" + id, "lg");
-                }
-                // Phone management functions
-                function suaPhone(id) {
-                    window.location.href = "/Phone/Edit/" + id;
-                }
+          let dataTable;
 
-                function duyetPhone(id) {
+          function xemPhone(id) {
+              if (!permissions.view) {
+                  return;
+              }
+              openModalWithApi("/Phone/View/" + id, "lg");
+          }
+          function suaPhone(id) {
+              window.location.href = "/Phone/Edit/" + id;
+          }
+
+          function duyetPhone(id) {
             toggleButtonContainerLoading(id);
 
             $.ajax({
@@ -99,7 +108,6 @@
                     if (response.success) {
                         showNotification("success", response.message || "Duyệt thành công");
 
-                        // Sử dụng window.dataTable thay vì dataTable
                         if (window.dataTable && typeof window.dataTable.ajax !== 'undefined') {
                             window.dataTable.ajax.reload(function() {
                                 console.log('Table reloaded after approve');
@@ -120,7 +128,7 @@
             });
         }
 
-                function huyDuyetPhone(id) {
+        function huyDuyetPhone(id) {
             toggleButtonContainerLoading(id);
 
             $.ajax({
@@ -134,7 +142,6 @@
                     if (response.success) {
                         showNotification("success", response.message || "Hủy duyệt thành công");
 
-                        // Sử dụng window.dataTable thay vì dataTable
                         if (window.dataTable && typeof window.dataTable.ajax !== 'undefined') {
                             window.dataTable.ajax.reload(function() {
                                 console.log('Table reloaded after reject');
@@ -155,11 +162,10 @@
             });
         }
 
-                function xoaPhone(id) {
+        function xoaPhone(id) {
             showNotificationWithConfirm(
                 "Bạn có chắc chắn muốn xóa điện thoại này?",
                 function () {
-                    // Hiển thị loading state
                     toggleButtonContainerLoading(id);
 
                     $.ajax({
@@ -173,7 +179,6 @@
                             if (response.success) {
                                 showNotification("success", response.message || "Xóa thành công");
 
-                                // Sử dụng window.dataTable thay vì dataTable
                                 if (window.dataTable && typeof window.dataTable.ajax !== 'undefined') {
                                     window.dataTable.ajax.reload(function() {
                                         console.log('Table reloaded after delete');
@@ -194,7 +199,6 @@
                     });
                 },
                 function () {
-                    // Callback khi user hủy - không cần làm gì
                     console.log('Delete cancelled by user');
                 }
             );
@@ -209,9 +213,9 @@
 
                 function getModerationStatusClass(status) {
                     switch (status) {
-                        case 0: return 'bg-success'; // Đã duyệt
-                        case 1: return 'bg-warning text-dark'; // Chưa duyệt
-                        case 2: return 'bg-danger'; // Từ chối
+                        case 0: return 'bg-success'; 
+                        case 1: return 'bg-warning text-dark'; 
+                        case 2: return 'bg-danger'; 
                         default: return 'bg-secondary';
                     }
                 }
@@ -233,126 +237,119 @@
                 $(document).ready(function () {
                     console.log('Phone management page loaded');
 
-                    // Đảm bảo dataTable là global variable
                     window.dataTable = null;
 
-                    // Hàm ánh xạ tên trường chữ thường sang chữ hoa đầu
                     function capitalizeFirstLetter(str) {
                        return str.charAt(0).toUpperCase() + str.slice(1);
                     }
                     const style = document.createElement('style');
-        style.textContent = `
-        /* Chỉ ẩn các element mặc định của DataTables trong table */
-        #phone-table_wrapper .dataTables_length,
-        #phone-table_wrapper .dataTables_info {
-            display: none !important;
-        }
+                    style.textContent = `
+                        #phone-table_wrapper .dataTables_length,
+                        #phone-table_wrapper .dataTables_info {
+                            display: none !important;
+                        }
 
-        /* Style cho pagination container với page size selector */
-        .pagination-container {
-            background-color: transparent;
-            border: none !important;
-            margin: 0;
-            padding: 1rem 0;
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-        }
+                        .pagination-container {
+                            background-color: transparent;
+                            border: none !important;
+                            margin: 0;
+                            padding: 1rem 0;
+                            display: flex;
+                            justify-content: space-between;
+                            width: 100%;
+                        }
         
-        /* Page size selector bên trái - to hơn và thụt vào trái */
-        .page-size-selector {
-            display: flex;
-            align-items: center;
-            font-size: 0.95rem;
-            color: #495057;
-            font-weight: 500;
-            margin-left: 0.5rem; /* Thụt vào trái */;
-            margin-top: -6rem;
-        }
+                        .page-size-selector {
+                            display: flex;
+                            align-items: center;
+                            font-size: 0.95rem;
+                            color: #495057;
+                            font-weight: 500;
+                            margin-left: 1rem; 
+                            margin-top: -6rem;
+                        }
 
-        .page-size-selector .form-label {
-            margin-bottom: 0;
-            white-space: nowrap;
-        }
+                        .page-size-selector .form-label {
+                            margin-bottom: 0;
+                            white-space: nowrap;
+                        }
 
-        .page-size-selector .form-select {
-            width: auto;
-            min-width: 85px; /* To hơn từ 70px lên 85px */
-            font-size: 0.95rem; /* To hơn */
-            padding: 0.5rem 0.75rem; /* Padding to hơn */
-            margin: 0 0.2rem;
-            border: 1px solid #ced4da;
-            border-radius: 0.375rem;
-            font-weight: 500;
-        }
+                        .page-size-selector .form-select {
+                            width: auto;
+                            min-width: 85px; 
+                            font-size: 0.95rem; 
+                            padding: 0.5rem 0.75rem; 
+                            margin: 0 0.2rem;
+                            border: 1px solid #ced4da;
+                            border-radius: 0.375rem;
+                            font-weight: 500;
+                        }
 
-        .page-size-selector span {
-            white-space: nowrap;
-        }
+                        .page-size-selector span {
+                            white-space: nowrap;
+                        }
 
-        /* Pagination wrapper bên phải */
-        .pagination-wrapper {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin-right: 0.5rem; /* Thụt vào phải */
-        }
+                        .pagination-wrapper {
+                            display: flex;
+                            justify-content: flex-end;
+                            align-items: center;
+                            margin-right: 0.5rem; 
+                        }
 
-        .pagination-wrapper .dataTables_paginate {
-            margin: 0 !important;
-            display: flex;
-            justify-content: center;
-        }
+                        .pagination-wrapper .dataTables_paginate {
+                            margin: 0 !important;
+                            display: flex;
+                            justify-content: center;
+                        }
 
-        /* Style cho pagination */
-        .pagination-wrapper .dataTables_paginate .pagination {
-            margin-bottom: 0 !important;
-            box-shadow: none !important;
-            display: flex;
-            justify-content: center;
-        }
+                        .pagination-wrapper .dataTables_paginate .pagination {
+                            margin-bottom: 0 !important;
+                            box-shadow: none !important;
+                            display: flex;
+                            justify-content: center;
+                        }
 
-        .pagination-wrapper .dataTables_paginate .page-link {
-            border: 1px solid #dee2e6;
-            color: #6c757d;
-            background-color: #fff;
-            padding: 0.5rem 0.75rem;
-            transition: all 0.2s ease-in-out;
-            font-size: 0.875rem;
-        }
+                        .pagination-wrapper .dataTables_paginate .page-link {
+                            border: 1px solid #dee2e6;
+                            color: #6c757d;
+                            background-color: #fff;
+                            padding: 0.5rem 0.75rem;
+                            transition: all 0.2s ease-in-out;
+                            font-size: 0.875rem;
+                        }
 
-        .pagination-wrapper .dataTables_paginate .page-link:hover {
-            background-color: #e9ecef;
-            border-color: #adb5bd;
-            color: #495057;
-        }
+                        .pagination-wrapper .dataTables_paginate .page-link:hover {
+                            background-color: #e9ecef;
+                            border-color: #adb5bd;
+                            color: #495057;
+                        }
 
-        .pagination-wrapper .dataTables_paginate .page-item.active .page-link {
-            background-color: #007bff;
-            border-color: #007bff;
-            color: #fff;
-        }
+                        .pagination-wrapper .dataTables_paginate .page-item.active .page-link {
+                            background-color: #007bff;
+                            border-color: #007bff;
+                            color: #fff;
+                        }
 
-        .pagination-wrapper .dataTables_paginate .page-item.disabled .page-link {
-            color: #6c757d;
-            background-color: #fff;
-            border-color: #dee2e6;
-            opacity: 0.5;
-        }
-        `;
-        document.head.appendChild(style);
-                    // Initialize DataTable
+                        .pagination-wrapper .dataTables_paginate .page-item.disabled .page-link {
+                            color: #6c757d;
+                            background-color: #fff;
+                            border-color: #dee2e6;
+                            opacity: 0.5;
+                        }
+                    `;
+             document.head.appendChild(style);
+                   
                     try {
                         window.dataTable = $('#phone-table').DataTable({
                             processing: true,
                             serverSide: true,
-                            searching: false, // Giữ tìm kiếm tùy chỉnh
-                            lengthChange: false, // Tắt menu mặc định của DataTables
-                            info: false, // Tắt thông tin bản ghi mặc định
+                            searching: false, 
+                            lengthChange: false, 
+                            info: false, 
                             paging: true,
                             ordering: true,
-                            order: [[3, 'desc']], // Sắp xếp mặc định theo cột giá (index 3)
-                            pageLength: 10, // Mặc định 10 bản ghi
+                            order: [[3, 'desc']], 
+                            pageLength: 10, 
                             ajax: {
                                 url: '/Phone/GetPaged',
                                 type: 'GET',
@@ -371,14 +368,14 @@
                                     console.log('DataTable response:', response);
 
                                     if (response.success && response.data) {
-                                        // Ánh xạ dữ liệu cho DataTable
+                                      
                                         const dataTableResponse = {
                                             draw: response.data.draw || 1,
                                             recordsTotal: response.data.recordsTotal || 0,
                                             recordsFiltered: response.data.recordsFiltered || 0,
                                             data: response.data.data || []
                                         };
-                                        // Cập nhật settings để DataTable nhận thông tin phân trang
+                                       
                                         if (dataTable) {
                                             dataTable.settings()[0].json = dataTableResponse;
                                         }
@@ -405,7 +402,7 @@
                                     className: 'text-center'
                                 },
                                 {
-                                    data: 'model', // Phải khớp với SortField ở backend
+                                    data: 'model', 
                                     render: function (data, type, row) {
                                         return `<a href='#' onclick='xemPhone("${row.id}")' class="text-decoration-none">${data}</a>`;
                                     },
@@ -450,22 +447,30 @@
                                     data: null,
                                     render: function (data, type, row) {
                                         var html = `<div class='button-container-in-grid button-container-${row.id} d-flex justify-content-center gap-1'>`;
-                                        if (row.moderationStatus == 1) { // Chưa duyệt
-                                            html += `<button type="button" title="Sửa" onclick='suaPhone("${row.id}")' class="btn btn-sm btn-outline-warning">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>`;
-                                            html += `<button type="button" title="Duyệt" onclick='duyetPhone("${row.id}")' class="btn btn-sm btn-outline-success">
-                                                        <i class="fas fa-check"></i>
-                                                    </button>`;
-                                            html += `<button type="button" title="Xóa" onclick='xoaPhone("${row.id}")' class="btn btn-sm btn-outline-danger">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>`;
-                                        } else if (row.moderationStatus == 0) { // Đã duyệt
-                                            html += `<button type="button" title="Hủy duyệt" onclick='huyDuyetPhone("${row.id}")' class="btn btn-sm btn-outline-secondary">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>`;
-                                        }
-                                        return html += '</div>';
+                                        if (row.moderationStatus == 1) {
+                                            if (permissions.edit) {
+                                                html += `<button type="button" title="Sửa" onclick='suaPhone("${row.id}")' class="btn btn-sm btn-outline-warning">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>`;
+                                            }
+                                            if (permissions.approve) {
+                                                html += `<button type="button" title="Duyệt" onclick='duyetPhone("${row.id}")' class="btn btn-sm btn-outline-success">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>`;
+                                            }
+                                            if (permissions.delete) {
+                                                html += `<button type="button" title="Xóa" onclick='xoaPhone("${row.id}")' class="btn btn-sm btn-outline-danger">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>`;
+                                            }
+                                         } else if (row.moderationStatus == 0) {
+                                             if (permissions.reject) {
+                                                html += `<button type="button" title="Hủy duyệt" onclick='huyDuyetPhone("${row.id}")' class="btn btn-sm btn-outline-secondary">
+                                                            <i class="fas fa-times"></i>
+                                                         </button>`;
+                                             }
+                                         }
+                                         return html += '</div>';
                                     },
                                     orderable: false,
                                     className: 'text-center'
@@ -484,15 +489,14 @@
                                 }
                             },
                             dom: '<"row"<"col-sm-12"t>>' +
-                                 '<"pagination-container"<"page-size-selector"><"pagination-wrapper"p>>', // Custom layout
+                                 '<"pagination-container"<"page-size-selector"><"pagination-wrapper"p>>', 
                         });
 
-                        // Gán lại cho biến local để backward compatibility
                         dataTable = window.dataTable;
 
                         console.log('DataTable initialized successfully');
 
-                        // Handle page size change
+
                         $('#page-size-select').on('change', function() {
                             const newPageSize = parseInt($(this).val());
                             console.log('Changing page size to:', newPageSize);
@@ -507,14 +511,13 @@
                         showNotification('error', 'Có lỗi khi khởi tạo bảng dữ liệu: ' + error.message);
                     }
 
-                    // Custom search functionality
                     $('#search-btn').click(function () {
                         if (window.dataTable) {
                             window.dataTable.ajax.reload();
                         }
                     });
 
-                    $('#search-input').on('keypress', function (e) {
+                   $('#search-input').on('keypress', function (e) {
                         if (e.which == 13) {
                             $('#search-btn').click();
                         }
@@ -524,7 +527,6 @@
                         window.location.href = '/Phone/Edit/00000000-0000-0000-0000-000000000000';
                     });
 
-                    // Set active sidebar menu
                     $('.sidebar .nav-link').removeClass('active');
                     $('.sidebar .nav-link[href="/Phone"]').addClass('active');
 

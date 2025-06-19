@@ -50,5 +50,6 @@ namespace Phone_mvc.Services
         /// <param name="permissionId">ID quyền.</param>
         /// <returns>True nếu xóa thành công.</returns>
         Task<bool> RemoveRolePermissionAsync(Guid roleId, Guid permissionId);
+        Task<List<Guid>> GetRoleIdsWithData();
     }
 }

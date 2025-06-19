@@ -135,6 +135,9 @@
   <data name="EmptyModel" xml:space="preserve">
     <value>Tên mẫu điện thoại không thể để trống.</value>
   </data>
+  <data name="UpdateError" xml:space="preserve">
+    <value>Đã có lỗi xảy ra không thể cập nhật.</value>
+  </data>
   <data name="InternalServerError" xml:space="preserve">
     <value>Lỗi máy chủ nội bộ.</value>
   </data>
@@ -164,5 +167,17 @@
   </data>
   <data name="UpdatePhoneSuccess" xml:space="preserve">
     <value>Cập nhật điện thoại thành công.</value>
+  </data>
+  <data name="AddError" xml:space="preserve">
+    <value>Thêm điện thoại thất bại</value>
+  </data>
+  <data name="ApproveError" xml:space="preserve">
+    <value>Duyệt điện thoại thất bại</value>
+  </data>
+  <data name="RejectError" xml:space="preserve">
+    <value>Hủy duyệt thất bại</value>
+  </data>
+  <data name="InvalidData" xml:space="preserve">
+    <value>Dữ liệu không hợp lệ.</value>
   </data>
 </root>

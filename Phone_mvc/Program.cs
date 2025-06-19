@@ -7,23 +7,23 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddServices(builder.Configuration);
 
-// Thêm dịch vụ
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/User/Login";              // Khi chưa login thì chuyển về đây
-        options.LogoutPath = "/User/Logout";
-        options.AccessDeniedPath = "/User/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);  // Thời hạn cookie
-        options.SlidingExpiration = true;                   // Gia hạn nếu người dùng hoạt động
+        options.LoginPath = "/Auth";
+        options.LogoutPath = "/Auth/Logout";
+        options.AccessDeniedPath = "/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        options.SlidingExpiration = true;
         options.Cookie.HttpOnly = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     });
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddMemoryCache();
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddHostedService<PermissionSyncHostedService>();
 
@@ -40,6 +40,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();

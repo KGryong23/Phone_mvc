@@ -86,6 +86,7 @@ namespace Phone_mvc.Dtos
         /// ID của thương hiệu liên kết với điện thoại (không bắt buộc).
         /// </summary>
         public Guid? BrandId { get; set; }
+        public Guid? CreatedBy { get; set; } = null!;
     }
     /// <summary>
     /// Đại diện cho yêu cầu cập nhật một điện thoại hiện có.

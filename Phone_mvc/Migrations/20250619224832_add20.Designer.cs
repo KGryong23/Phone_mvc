@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Phone_mvc.Data;
 
@@ -11,9 +12,11 @@ using Phone_mvc.Data;
 namespace Phone_mvc.Migrations
 {
     [DbContext(typeof(PhoneContext))]
-    partial class PhoneContextModelSnapshot : ModelSnapshot
+    [Migration("20250619224832_add20")]
+    partial class add20
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -56,7 +56,8 @@ namespace Phone_mvc.Extensions
                 Model = request.Model,
                 Price = request.Price,
                 Stock = request.Stock,
-                BrandId = request.BrandId
+                BrandId = request.BrandId,
+                CreatedBy = request.CreatedBy
             };
         }
 

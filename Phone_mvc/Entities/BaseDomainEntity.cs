@@ -27,6 +27,10 @@ namespace Phone_mvc.Entities
             protected set => _lastModified = value;
         }
         /// <summary>
+        /// Người tạo bản ghi, sử dụng Guid để tham chiếu đến người dùng
+        /// </summary>
+        public Guid? CreatedBy { get; set; }
+        /// <summary>
         /// Trạng thái duyệt của bản ghi
         /// </summary>
         public ModerationStatus ModerationStatus { get; set; }

@@ -32,7 +32,7 @@
                                         "Phone",
                                         isEdit ? new { id = phoneId } : null,
                                         FormMethod.Post,
-                                        true, // Fix: Add null for the optional 'htmlAttributes' parameter
+                                        true, 
                                         new { @class = "needs-validation", novalidate = "novalidate" }))
                     {
                         @Html.AntiForgeryToken()

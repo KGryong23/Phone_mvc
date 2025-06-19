@@ -5,6 +5,7 @@ using Phone_mvc.Extensions;
 using Phone_mvc.Filters;
 using Phone_mvc.Models;
 using Phone_mvc.Services;
+using System.Security.Claims;
 
 namespace Phone_mvc.Controllers
 {
@@ -37,10 +38,10 @@ namespace Phone_mvc.Controllers
             if (!ModelState.IsValid)
             {
                 var errors = ControllerBaseExtensions.GetValidationErrors(ModelState);
-                return BadRequest(ApiResponse<object>.ErrorResult("Dữ liệu không hợp lệ.", errors));
+                return BadRequest(ApiResponse<object>.ErrorResult(AppResources.InvalidData, errors));
             }
-
-            var result = await _phoneService.GetPagedAsync(query);
+            Guid? userId = GetUserId();
+            var result = await _phoneService.GetPagedAsync(query, userId);
             return Ok(ApiResponse<PagedResult<PhoneDto>>.SuccessResult(result));
         }
 
@@ -50,7 +51,8 @@ namespace Phone_mvc.Controllers
         [HttpGet]
         public async Task<IActionResult> View(Guid id)
         {
-            var phone = await _phoneService.GetByIdAsync(id);
+            Guid? userId = GetUserId();
+            var phone = await _phoneService.GetByIdAsync(id, userId);
             if (phone == null)
             {
                 return NotFound();
@@ -68,7 +70,6 @@ namespace Phone_mvc.Controllers
 
             if (id == Guid.Empty)
             {
-                // Thêm mới
                 var model = new CreateOrUpdatePhoneViewModel
                 {
                     Brands = brands.ToList()
@@ -78,9 +79,8 @@ namespace Phone_mvc.Controllers
             }
             else
             {
-                // Chỉnh sửa
-                var phone = await _phoneService.GetByIdAsync(id);
-                if (phone == null)
+                var phone = await _phoneService.GetByIdAsync(id, null);
+                if (phone is null)
                 {
                     return NotFound();
                 }
@@ -120,19 +120,20 @@ namespace Phone_mvc.Controllers
                 Model = viewModel.Model,
                 Price = viewModel.Price,
                 Stock = viewModel.Stock,
-                BrandId = viewModel.BrandId
+                BrandId = viewModel.BrandId,
+                CreatedBy = GetUserId()
             };
 
             var result = await _phoneService.AddAsync(request);
             if (result)
             {
-                TempData["SuccessMessage"] = "Thêm mới điện thoại thành công";
+                TempData["SuccessMessage"] = AppResources.AddPhoneSuccess;
                 TempData["FromPost"] = true;
                 return RedirectToAction(nameof(Index));
             }
             else
             {
-                ModelState.AddModelError("", "Có lỗi xảy ra khi thêm mới điện thoại");
+                ModelState.AddModelError("", AppResources.AddError);
                 var brands = await _brandService.GetAllAsync();
                 viewModel.Brands = brands.ToList();
                 ViewBag.IsEdit = false;
@@ -167,13 +168,13 @@ namespace Phone_mvc.Controllers
             var result = await _phoneService.UpdateAsync(id, request);
             if (result)
             {
-                TempData["SuccessMessage"] = "Cập nhật điện thoại thành công";
+                TempData["SuccessMessage"] = AppResources.UpdatePhoneSuccess;
                 TempData["FromPost"] = true;
                 return RedirectToAction(nameof(Index));
             }
             else
             {
-                ModelState.AddModelError("", "Có lỗi xảy ra khi cập nhật điện thoại");
+                ModelState.AddModelError("", AppResources.UpdateError);
                 var brands = await _brandService.GetAllAsync();
                 viewModel.Brands = brands.ToList();
                 ViewBag.IsEdit = true;
@@ -206,10 +207,10 @@ namespace Phone_mvc.Controllers
 
             if (!result)
             {
-                return BadRequest(ApiResponse<bool>.ErrorResult("Có lỗi xảy ra khi duyệt điện thoại"));
+                return BadRequest(ApiResponse<bool>.ErrorResult(AppResources.ApproveError));
             }
 
-            return Ok(ApiResponse<bool>.SuccessResult(true, "Duyệt điện thoại thành công"));
+            return Ok(ApiResponse<bool>.SuccessResult(true, AppResources.ApprovePhoneSuccess));
         }
 
         /// <summary>
@@ -222,10 +223,15 @@ namespace Phone_mvc.Controllers
 
             if (!result)
             {
-                return BadRequest(ApiResponse<bool>.ErrorResult("Có lỗi xảy ra khi hủy duyệt điện thoại"));
+                return BadRequest(ApiResponse<bool>.ErrorResult(AppResources.RejectError));
             }
 
-            return Ok(ApiResponse<bool>.SuccessResult(true, "Hủy duyệt điện thoại thành công"));
+            return Ok(ApiResponse<bool>.SuccessResult(true, AppResources.RejectError));
+        }
+        private Guid? GetUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return Guid.TryParse(userIdClaim, out var uid) ? uid : null;
         }
     }
 }

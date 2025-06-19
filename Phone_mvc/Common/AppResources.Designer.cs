@@ -61,6 +61,15 @@ namespace Phone_mvc.Common {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Thêm điện thoại thất bại.
+        /// </summary>
+        public static string AddError {
+            get {
+                return ResourceManager.GetString("AddError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Thêm điện thoại thành công..
         /// </summary>
         public static string AddPhoneSuccess {
@@ -75,6 +84,15 @@ namespace Phone_mvc.Common {
         public static string ApiError {
             get {
                 return ResourceManager.GetString("ApiError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duyệt điện thoại thất bại.
+        /// </summary>
+        public static string ApproveError {
+            get {
+                return ResourceManager.GetString("ApproveError", resourceCulture);
             }
         }
         
@@ -133,6 +151,15 @@ namespace Phone_mvc.Common {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Dữ liệu không hợp lệ..
+        /// </summary>
+        public static string InvalidData {
+            get {
+                return ResourceManager.GetString("InvalidData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ID không hợp lệ..
         /// </summary>
         public static string InvalidId {
@@ -169,6 +196,15 @@ namespace Phone_mvc.Common {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Hủy duyệt thất bại.
+        /// </summary>
+        public static string RejectError {
+            get {
+                return ResourceManager.GetString("RejectError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Từ chối điện thoại thành công..
         /// </summary>
         public static string RejectPhoneSuccess {
@@ -192,6 +228,15 @@ namespace Phone_mvc.Common {
         public static string TakeInvalid {
             get {
                 return ResourceManager.GetString("TakeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Đã có lỗi xảy ra không thể cập nhật..
+        /// </summary>
+        public static string UpdateError {
+            get {
+                return ResourceManager.GetString("UpdateError", resourceCulture);
             }
         }
         

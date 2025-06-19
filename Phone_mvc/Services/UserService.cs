@@ -295,5 +295,16 @@ namespace Phone_mvc.Services
                 });
             }
         }
+
+        public async Task<List<Guid>> GetUserRoleIdsAsync(Guid userId)
+        {
+            var roleIds = await _cache.GetOrCreateAsync($"user_{userId}", async entry =>
+            {
+                entry.SlidingExpiration = _cacheExpiration;
+                var userRoles = await _userRoleRepository.FindAllAsync(ur => ur.UserId == userId);
+                return userRoles.Select(ur => ur.RoleId).ToList();
+            });
+            return roleIds ?? new List<Guid>();
+        }
     }
 }

@@ -56,5 +56,12 @@ namespace Phone_mvc.Services
         /// <param name="roleId">ID của vai trò.</param>
         /// <returns>True nếu gán thành công, ngược lại là false.</returns>
         Task<bool> AssignRoleAsync(Guid userId, Guid roleId);
+
+        /// <summary>
+        /// Lấy danh sách ID của các vai trò được gán cho người dùng.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<List<Guid>> GetUserRoleIdsAsync(Guid userId);
     }
 }

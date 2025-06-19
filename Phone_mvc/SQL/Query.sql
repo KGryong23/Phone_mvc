@@ -72,3 +72,6 @@ INSERT INTO RolePermissions (RoleId, PermissionId) VALUES
 ('b259aaa5-c6da-4b27-bd9f-a6657365b543', '0ad3423e-f36b-1410-8a5b-00d531426dfb'),
 ('b259aaa5-c6da-4b27-bd9f-a6657365b543', '0dd3423e-f36b-1410-8a5b-00d531426dfb'),
 ('b259aaa5-c6da-4b27-bd9f-a6657365b543', '10d3423e-f36b-1410-8a5b-00d531426dfb');
+
+INSERT INTO RolePermissions (RoleId, PermissionId) VALUES
+('b259aaa5-c6da-4b27-bd9f-a6657365b543', '543f433e-f36b-1410-8a5d-00d531426dfb');

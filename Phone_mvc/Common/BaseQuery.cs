@@ -36,5 +36,10 @@ namespace Phone_mvc.Common
         /// </summary>
         [RegularExpression("^(asc|desc)$", ErrorMessageResourceType = typeof(AppResources))]
         public string SortDirection { get; set; } = "desc";
+
+        /// <summary>
+        /// ID của người tạo để lọc (tùy chọn).
+        /// </summary>
+        public Guid? CreatedBy { get; set; }
     }
 }

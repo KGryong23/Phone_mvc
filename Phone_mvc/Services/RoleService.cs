@@ -168,6 +168,12 @@ namespace Phone_mvc.Services
                 .Select(p => $"{p.Endpoint}:{p.Method}")
                 .ToList();
         }
+
+        public async Task<List<Guid>> GetRoleIdsWithData()
+        {
+            return await _roleRepository.FindAllAsync(r => r.Name == "Admin" || r.Name == "Manager")
+                .ContinueWith(t => t.Result.Select(r => r.Id).ToList());
+        }
     }
 }
 

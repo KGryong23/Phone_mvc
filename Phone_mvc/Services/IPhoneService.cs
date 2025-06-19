@@ -8,8 +8,8 @@ namespace Phone_mvc.Services
     /// </summary>
     public interface IPhoneService
     {
-        Task<PagedResult<PhoneDto>> GetPagedAsync(BaseQuery query);
-        Task<PhoneDto> GetByIdAsync(Guid id);
+        Task<PagedResult<PhoneDto>> GetPagedAsync(BaseQuery query, Guid? userId);
+        Task<PhoneDto> GetByIdAsync(Guid id, Guid? userId);
         Task<bool> AddAsync(CreatePhoneRequest request);
         Task<bool> UpdateAsync(Guid id, UpdatePhoneRequest request);
         Task<bool> DeleteAsync(Guid id);

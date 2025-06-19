@@ -2,6 +2,11 @@
 @using Phone_mvc.Enums
 @model PhoneDto
 
+@{
+    ViewData["Title"] = "Chi tiết Điện thoại";
+    var canEdit = Html.HasPermission("/phone/update").ToString().ToLower();
+}
+
 <div class="modal-header">
     <h5 class="modal-title">Chi tiết Điện thoại</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -80,7 +85,7 @@
 </div>
 
 <div class="modal-footer">
-    @if (Model.ModerationStatus != ModerationStatus.Approved)
+    @if (canEdit == "true" && Model.ModerationStatus != ModerationStatus.Approved)
     {
         <a href="/Phone/Edit/@Model.Id" class="btn btn-primary">
             <i class="fa fa-edit me-2"></i>Chỉnh sửa
